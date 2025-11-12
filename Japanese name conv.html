@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Japanese Name Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Cherry blossom animation */
+        .sakura {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background: radial-gradient(circle, #ffb7d5 0%, #ff69b4 100%);
+            border-radius: 50% 0 50% 0;
+            opacity: 0.7;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 60px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            z-index: 10;
+        }
+
+        .torii {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #764ba2;
+            font-size: 2em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: #667eea;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        .input-container {
+            margin-bottom: 30px;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 1.1em;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            outline: none;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input:focus {
+            border-color: #764ba2;
+            box-shadow: 0 0 15px rgba(118, 75, 162, 0.3);
+        }
+
+        button {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 1.1em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(118, 75, 162, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .result-container {
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-top: 30px;
+        }
+
+        .japanese-name {
+            font-size: 4em;
+            color: #764ba2;
+            font-weight: bold;
+            margin-bottom: 15px;
+            animation: fadeInScale 0.6s ease;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .romaji-name {
+            font-size: 1.3em;
+            color: #667eea;
+            font-style: italic;
+            animation: fadeIn 0.8s ease;
+        }
+
+        @keyframes fadeInScale {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .instruction {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .wave {
+            display: inline-block;
+            font-size: 2em;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="torii">🪭</div>
+        <p class="subtitle">Discover your name in Japanese</p>
+        
+        <div class="input-container">
+            <input 
+                type="text" 
+                id="nameInput" 
+                placeholder="Enter your name..." 
+                autocomplete="off"
+            >
+            <button id="convertBtn">Enter</button>
+        </div>
+
+        <div class="result-container" id="result">
+            <div class="wave">🌸</div>
+        </div>
+    </div>
+
+    <script>
+        // Katakana conversion map
+        const katakanMap = {
+            'a': 'ア', 'i': 'イ', 'u': 'ウ', 'e': 'エ', 'o': 'オ',
+            'ka': 'カ', 'ki': 'キ', 'ku': 'ク', 'ke': 'ケ', 'ko': 'コ',
+            'sa': 'サ', 'shi': 'シ', 'su': 'ス', 'se': 'セ', 'so': 'ソ',
+            'ta': 'タ', 'chi': 'チ', 'tsu': 'ツ', 'te': 'テ', 'to': 'ト',
+            'na': 'ナ', 'ni': 'ニ', 'nu': 'ヌ', 'ne': 'ネ', 'no': 'ノ',
+            'ha': 'ハ', 'hi': 'ヒ', 'fu': 'フ', 'he': 'ヘ', 'ho': 'ホ',
+            'ma': 'マ', 'mi': 'ミ', 'mu': 'ム', 'me': 'メ', 'mo': 'モ',
+            'ya': 'ヤ', 'yu': 'ユ', 'yo': 'ヨ',
+            'ra': 'ラ', 'ri': 'リ', 'ru': 'ル', 're': 'レ', 'ro': 'ロ',
+            'wa': 'ワ', 'wo': 'ヲ', 'n': 'ン',
+            'ga': 'ガ', 'gi': 'ギ', 'gu': 'グ', 'ge': 'ゲ', 'go': 'ゴ',
+            'za': 'ザ', 'ji': 'ジ', 'zu': 'ズ', 'ze': 'ゼ', 'zo': 'ゾ',
+            'da': 'ダ', 'di': 'ヂ', 'du': 'ヅ', 'de': 'デ', 'do': 'ド',
+            'ba': 'バ', 'bi': 'ビ', 'bu': 'ブ', 'be': 'ベ', 'bo': 'ボ',
+            'pa': 'パ', 'pi': 'ピ', 'pu': 'プ', 'pe': 'ペ', 'po': 'ポ',
+            'kya': 'キャ', 'kyu': 'キュ', 'kyo': 'キョ',
+            'sha': 'シャ', 'shu': 'シュ', 'sho': 'ショ',
+            'cha': 'チャ', 'chu': 'チュ', 'cho': 'チョ',
+            'nya': 'ニャ', 'nyu': 'ニュ', 'nyo': 'ニョ',
+            'hya': 'ヒャ', 'hyu': 'ヒュ', 'hyo': 'ヒョ',
+            'mya': 'ミャ', 'myu': 'ミュ', 'myo': 'ミョ',
+            'rya': 'リャ', 'ryu': 'リュ', 'ryo': 'リョ',
+            'gya': 'ギャ', 'gyu': 'ギュ', 'gyo': 'ギョ',
+            'ja': 'ジャ', 'ju': 'ジュ', 'jo': 'ジョ',
+            'bya': 'ビャ', 'byu': 'ビュ', 'byo': 'ビョ',
+            'pya': 'ピャ', 'pyu': 'ピュ', 'pyo': 'ピョ'
+        };
+
+        function toRomaji(name) {
+            return name.toLowerCase()
+                .replace(/th/g, 's')
+                .replace(/ph/g, 'f')
+                .replace(/v/g, 'b')
+                .replace(/l/g, 'r')
+                .replace(/c([eiy])/g, 's$1')
+                .replace(/c/g, 'k')
+                .replace(/q/g, 'k')
+                .replace(/x/g, 'kusu')
+                .replace(/([bcdfghjklmnpqrstvwxyz])([bcdfghjklmnpqrstvwxyz])/g, '$1u$2')
+                .replace(/([bcdfghjklmnpqrstvwxyz])$/g, '$1u')
+                .replace(/([aiueo])\1/g, '$1');
+        }
+
+        function toKatakana(romaji) {
+            let result = '';
+            let i = 0;
+            
+            while (i < romaji.length) {
+                let found = false;
+                
+                for (let len = 3; len >= 1; len--) {
+                    let substr = romaji.substr(i, len);
+                    if (katakanMap[substr]) {
+                        result += katakanMap[substr];
+                        i += len;
+                        found = true;
+                        break;
+                    }
+                }
+                
+                if (!found) {
+                    i++;
+                }
+            }
+            
+            return result;
+        }
+
+        function convertName(name) {
+            const romaji = toRomaji(name.trim());
+            const katakana = toKatakana(romaji);
+            return katakana;
+        }
+
+        // Create falling cherry blossoms
+        function createSakura() {
+            const sakura = document.createElement('div');
+            sakura.className = 'sakura';
+            sakura.style.left = Math.random() * 100 + '%';
+            sakura.style.animationDuration = (Math.random() * 3 + 5) + 's';
+            sakura.style.animationDelay = Math.random() * 5 + 's';
+            document.body.appendChild(sakura);
+            
+            setTimeout(() => {
+                sakura.remove();
+            }, 8000);
+        }
+
+        // Generate cherry blossoms periodically
+        setInterval(createSakura, 800);
+        
+        // Initial blossoms
+        for (let i = 0; i < 8; i++) {
+            setTimeout(createSakura, i * 200);
+        }
+
+        // Handle name input
+        const input = document.getElementById('nameInput');
+        const button = document.getElementById('convertBtn');
+        const result = document.getElementById('result');
+
+        function displayName() {
+            const name = input.value.trim();
+            if (name) {
+                const japaneseName = convertName(name);
+                
+                result.innerHTML = `
+                    <div class="japanese-name">${japaneseName}</div>
+                    <div class="romaji-name">${name}</div>
+                `;
+            }
+        }
+
+        button.addEventListener('click', displayName);
+
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                displayName();
+            }
+        });
+    </script>
+</body>
+</html>
